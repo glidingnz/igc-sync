@@ -71,9 +71,16 @@ IGC_SYNC_NOW=2026-11-01 go run .
 ```
 {cwd}/
 └── central-plateau-soaring-competition-oct-2026/
-    ├── 2026-11-07_ZKJ_001.igc
-    ├── 2026-11-07_ZKL_001.igc
-    └── 2026-11-08_ZKJ_001.igc
+    ├── 637GBE1.igc
+    ├── 637GBH1.igc
+    ├── 637GDX1.igc
+    ├── 637GFE1.igc
+    ├── 637GHD1.igc
+    ├── 637GKT1.igc
+    ├── 637GKW1.igc
+    ├── 637GLL1.igc
+    ├── 637GML1.igc
+    └── ...
 ```
 
 ## How it works
