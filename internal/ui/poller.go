@@ -317,13 +317,13 @@ func fetchAndDiff(cfg PollConfig) (remote []api.IgcFile, items []downloadItem, e
 	return remote, items, nil
 }
 
-// RunPoller starts the interactive status display and polling loop.
-// It blocks until the user quits.
 // prepareOutputDir creates the output directory if it does not already exist.
 func prepareOutputDir(dir string) error {
 	return os.MkdirAll(dir, 0755)
 }
 
+// RunPoller starts the interactive status display and polling loop.
+// It blocks until the user quits.
 func RunPoller(cfg PollConfig) error {
 	if err := prepareOutputDir(cfg.OutputDir); err != nil {
 		return fmt.Errorf("creating output directory %q: %w", cfg.OutputDir, err)
