@@ -65,7 +65,7 @@ func TestRunCycle_DownloadsNewFiles(t *testing.T) {
 		t.Fatalf("runCycle error: %v", err)
 	}
 
-	destPath := filepath.Join(dir, "2026-04-01", "2026-04-01_ZKJ_001.igc")
+	destPath := filepath.Join(dir, "2026-04-01_ZKJ_001.igc")
 	got, err := os.ReadFile(destPath)
 	if err != nil {
 		t.Fatalf("file not downloaded: %v", err)
@@ -96,11 +96,7 @@ func TestRunCycle_NoChanges(t *testing.T) {
 	srvURL = srv.URL
 
 	dir := t.TempDir()
-	subdir := filepath.Join(dir, "2026-04-01")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(subdir, "a.igc"), content, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "a.igc"), content, 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -142,11 +138,7 @@ func TestRunCycle_UpdatesChangedFile(t *testing.T) {
 	srvURL = srv.URL
 
 	dir := t.TempDir()
-	subdir := filepath.Join(dir, "2026-04-01")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(subdir, "a.igc"), oldContent, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "a.igc"), oldContent, 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -162,7 +154,7 @@ func TestRunCycle_UpdatesChangedFile(t *testing.T) {
 		t.Fatalf("runCycle error: %v", err)
 	}
 
-	got, err := os.ReadFile(filepath.Join(subdir, "a.igc"))
+	got, err := os.ReadFile(filepath.Join(dir, "a.igc"))
 	if err != nil {
 		t.Fatalf("reading updated file: %v", err)
 	}

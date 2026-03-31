@@ -18,7 +18,7 @@ func TestLocalPath(t *testing.T) {
 		FlightDate: "2026-04-01",
 	}
 	got := LocalPath(f)
-	want := filepath.Join("2026-04-01", "2026-04-01_ZKJ_001.igc")
+	want := "2026-04-01_ZKJ_001.igc"
 	if got != want {
 		t.Errorf("LocalPath = %q, want %q", got, want)
 	}
@@ -46,7 +46,7 @@ func TestDiff_UpdatedFile(t *testing.T) {
 		{Filename: "a.igc", FlightDate: "2026-04-01", FileHash: "newhash"},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "a.igc"): "oldhash",
+		"a.igc": "oldhash",
 	}
 
 	result := Diff(remote, local)
@@ -68,7 +68,7 @@ func TestDiff_NoChanges(t *testing.T) {
 		{Filename: "a.igc", FlightDate: "2026-04-01", FileHash: hash},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "a.igc"): hash,
+		"a.igc": hash,
 	}
 
 	result := Diff(remote, local)
@@ -84,7 +84,7 @@ func TestDiff_EmptyHashSkipsUpdate(t *testing.T) {
 		{Filename: "a.igc", FlightDate: "2026-04-01", FileHash: ""},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "a.igc"): "existinghash",
+		"a.igc": "existinghash",
 	}
 
 	result := Diff(remote, local)
@@ -101,8 +101,8 @@ func TestDiff_MixedResults(t *testing.T) {
 		{Filename: "changed.igc", FlightDate: "2026-04-01", FileHash: "ccc"},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "same.igc"):    "bbb",
-		filepath.Join("2026-04-01", "changed.igc"): "old",
+		"same.igc":    "bbb",
+		"changed.igc": "old",
 	}
 
 	result := Diff(remote, local)
@@ -139,14 +139,8 @@ func TestScanLocal_NonExistentDir(t *testing.T) {
 func TestScanLocal_WithFiles(t *testing.T) {
 	dir := t.TempDir()
 
-	// Create a date subdirectory with a file.
-	subdir := filepath.Join(dir, "2026-04-01")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-
 	content := []byte("IGC file content here")
-	filePath := filepath.Join(subdir, "test.igc")
+	filePath := filepath.Join(dir, "test.igc")
 	if err := os.WriteFile(filePath, content, 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -156,10 +150,9 @@ func TestScanLocal_WithFiles(t *testing.T) {
 		t.Fatalf("ScanLocal error: %v", err)
 	}
 
-	relPath := filepath.Join("2026-04-01", "test.igc")
-	hash, ok := state[relPath]
+	hash, ok := state["test.igc"]
 	if !ok {
-		t.Fatalf("expected %q in state, got %v", relPath, state)
+		t.Fatalf("expected %q in state, got %v", "test.igc", state)
 	}
 
 	// Verify hash matches manual calculation.
@@ -193,7 +186,7 @@ func TestDownload_Success(t *testing.T) {
 		t.Fatalf("Download error: %v", err)
 	}
 
-	destPath := filepath.Join(dir, "2026-04-01", "2026-04-01_ZKJ_001.igc")
+	destPath := filepath.Join(dir, "2026-04-01_ZKJ_001.igc")
 	got, err := os.ReadFile(destPath)
 	if err != nil {
 		t.Fatalf("reading downloaded file: %v", err)
@@ -223,7 +216,7 @@ func TestDownload_HashMismatch(t *testing.T) {
 	}
 
 	// Temp file should be cleaned up.
-	tmpPath := filepath.Join(dir, "2026-04-01", "2026-04-01_ZKJ_001.igc.tmp")
+	tmpPath := filepath.Join(dir, "2026-04-01_ZKJ_001.igc.tmp")
 	if _, err := os.Stat(tmpPath); !os.IsNotExist(err) {
 		t.Error("temp file should be removed after hash mismatch")
 	}
@@ -248,7 +241,7 @@ func TestDownload_HTTPError(t *testing.T) {
 	}
 }
 
-func TestDownload_CreatesSubdirectory(t *testing.T) {
+func TestDownload_CreatesOutputDir(t *testing.T) {
 	content := []byte("IGC data")
 	h := sha256.Sum256(content)
 	hash := hex.EncodeToString(h[:])
@@ -258,7 +251,7 @@ func TestDownload_CreatesSubdirectory(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	dir := t.TempDir()
+	dir := filepath.Join(t.TempDir(), "new-subdir")
 	f := api.IgcFile{
 		Filename:   "file.igc",
 		FlightDate: "2026-11-07",
@@ -270,9 +263,9 @@ func TestDownload_CreatesSubdirectory(t *testing.T) {
 		t.Fatalf("Download error: %v", err)
 	}
 
-	// Verify subdirectory was created.
-	subdir := filepath.Join(dir, "2026-11-07")
-	if _, err := os.Stat(subdir); os.IsNotExist(err) {
-		t.Error("expected subdirectory 2026-11-07 to be created")
+	// File should be directly in the output dir, no date subdirectory.
+	destPath := filepath.Join(dir, "file.igc")
+	if _, err := os.Stat(destPath); os.IsNotExist(err) {
+		t.Errorf("expected file at %s", destPath)
 	}
 }

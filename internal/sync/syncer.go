@@ -22,9 +22,9 @@ type DiffResult struct {
 }
 
 // LocalPath returns the relative path for a file within the output directory.
-// Format: {flight_date}/{filename}
+// Format: {filename}
 func LocalPath(f api.IgcFile) string {
-	return filepath.Join(f.FlightDate, f.Filename)
+	return f.Filename
 }
 
 // ScanLocal scans outputDir recursively for .igc files and computes their SHA-256 hash.
@@ -74,8 +74,8 @@ func Diff(remote []api.IgcFile, local LocalState) DiffResult {
 	return result
 }
 
-// Download downloads a single IGC file to outputDir/{flight_date}/{filename},
-// creating parent directories as needed, and verifies the SHA-256 hash afterwards.
+// Download downloads a single IGC file to outputDir/{filename},
+// creating the directory as needed, and verifies the SHA-256 hash afterwards.
 func Download(f api.IgcFile, outputDir string, client *http.Client) error {
 	destPath := filepath.Join(outputDir, LocalPath(f))
 
