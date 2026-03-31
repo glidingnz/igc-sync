@@ -163,6 +163,44 @@ func TestRunCycle_UpdatesChangedFile(t *testing.T) {
 	}
 }
 
+// ---- output directory creation tests ----------------------------------------
+
+func TestRunPoller_CreatesOutputDirOnStart(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "new-event-dir")
+	// dir does not exist yet
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		t.Fatal("expected dir to not exist before test")
+	}
+
+	cfg := PollConfig{
+		EventSlug: "test-event",
+		OutputDir: dir,
+		Interval:  10 * time.Second,
+	}
+
+	if err := prepareOutputDir(cfg.OutputDir); err != nil {
+		t.Fatalf("prepareOutputDir error: %v", err)
+	}
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		t.Error("expected output directory to be created")
+	}
+}
+
+func TestRunPoller_ExistingDirIsNotAnError(t *testing.T) {
+	dir := t.TempDir() // already exists
+
+	cfg := PollConfig{
+		EventSlug: "test-event",
+		OutputDir: dir,
+		Interval:  10 * time.Second,
+	}
+
+	if err := prepareOutputDir(cfg.OutputDir); err != nil {
+		t.Fatalf("prepareOutputDir should not error on existing dir: %v", err)
+	}
+}
+
 // ---- pollModel unit tests (no HTTP, no real terminal) ----------------------
 
 func testCfg() PollConfig {
