@@ -163,6 +163,55 @@ func TestRunCycle_UpdatesChangedFile(t *testing.T) {
 	}
 }
 
+// ---- output directory creation tests ----------------------------------------
+
+func TestPrepareOutputDir_CreatesDir(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "new-event-dir")
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		t.Fatal("expected dir to not exist before test")
+	}
+
+	if err := prepareOutputDir(dir); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		t.Error("expected output directory to be created")
+	}
+}
+
+func TestPrepareOutputDir_ExistingDirIsNotAnError(t *testing.T) {
+	dir := t.TempDir() // already exists
+	if err := prepareOutputDir(dir); err != nil {
+		t.Fatalf("prepareOutputDir should not error on existing dir: %v", err)
+	}
+}
+
+func TestRunPoller_FailsFastWhenOutputDirCannotBeCreated(t *testing.T) {
+	// Create a regular file where the output dir should be — MkdirAll will fail.
+	parent := t.TempDir()
+	blocker := filepath.Join(parent, "not-a-dir")
+	if err := os.WriteFile(blocker, []byte("x"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	// Attempt to use a subdirectory of the file as the output dir.
+	outputDir := filepath.Join(blocker, "subdir")
+
+	cfg := PollConfig{
+		EventSlug: "test-event",
+		OutputDir: outputDir,
+		Interval:  10 * time.Second,
+	}
+
+	err := RunPoller(cfg)
+	if err == nil {
+		t.Fatal("expected RunPoller to return an error when output dir cannot be created")
+	}
+	if !strings.Contains(err.Error(), "creating output directory") {
+		t.Errorf("expected error to mention 'creating output directory', got: %v", err)
+	}
+}
+
 // ---- pollModel unit tests (no HTTP, no real terminal) ----------------------
 
 func testCfg() PollConfig {

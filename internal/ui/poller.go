@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -316,9 +317,17 @@ func fetchAndDiff(cfg PollConfig) (remote []api.IgcFile, items []downloadItem, e
 	return remote, items, nil
 }
 
+// prepareOutputDir creates the output directory if it does not already exist.
+func prepareOutputDir(dir string) error {
+	return os.MkdirAll(dir, 0755)
+}
+
 // RunPoller starts the interactive status display and polling loop.
 // It blocks until the user quits.
 func RunPoller(cfg PollConfig) error {
+	if err := prepareOutputDir(cfg.OutputDir); err != nil {
+		return fmt.Errorf("creating output directory %q: %w", cfg.OutputDir, err)
+	}
 	m := newPollModel(cfg)
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	_, err := p.Run()
