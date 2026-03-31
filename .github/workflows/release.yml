@@ -61,4 +61,4 @@ jobs:
       - name: Upload to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.ref_name }} ${{ matrix.asset }}
+        run: gh release upload ${{ github.ref_name }} ${{ matrix.asset }} --clobber
