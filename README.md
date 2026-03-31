@@ -18,7 +18,7 @@ igc-sync
 
 1. A loading screen fetches the event list from gliding.net.nz.
 2. Select an event using the arrow keys and press Enter.
-3. Files are downloaded to `./{event-slug}/{YYYY-MM-DD}/{filename}.igc` and kept in sync, polling every 60 seconds.
+3. Files are downloaded to `./{event-slug}/{filename}.igc` and kept in sync, polling every 60 seconds.
 4. Press `q` or `Ctrl+C` to stop.
 
 No authentication is required — the gliding.net.nz API is public.

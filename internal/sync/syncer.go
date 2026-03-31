@@ -22,9 +22,9 @@ type DiffResult struct {
 }
 
 // LocalPath returns the relative path for a file within the output directory.
-// Format: {filename}
+// It sanitizes the filename to prevent path traversal attacks.
 func LocalPath(f api.IgcFile) string {
-	return f.Filename
+	return filepath.Base(f.Filename)
 }
 
 // ScanLocal scans outputDir recursively for .igc files and computes their SHA-256 hash.

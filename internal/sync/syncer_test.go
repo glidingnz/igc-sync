@@ -24,6 +24,24 @@ func TestLocalPath(t *testing.T) {
 	}
 }
 
+func TestLocalPath_PathTraversal(t *testing.T) {
+	cases := []struct {
+		filename string
+		want     string
+	}{
+		{"../../../etc/passwd", "passwd"},
+		{"subdir/evil.igc", "evil.igc"},
+		{"/absolute/path.igc", "path.igc"},
+	}
+	for _, c := range cases {
+		f := api.IgcFile{Filename: c.filename}
+		got := LocalPath(f)
+		if got != c.want {
+			t.Errorf("LocalPath(%q) = %q, want %q", c.filename, got, c.want)
+		}
+	}
+}
+
 func TestDiff_NewFiles(t *testing.T) {
 	remote := []api.IgcFile{
 		{Filename: "641GBE1.igc", FlightDate: "2026-04-01", FileHash: "aaa"},
