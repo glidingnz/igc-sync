@@ -35,15 +35,15 @@ func TestRunCycle_DownloadsNewFiles(t *testing.T) {
 		case "/api/v1/events/42/igc-files":
 			w.Write([]byte(fmt.Sprintf(`{
 				"success": true, "data": [{
-					"id": 1, "filename": "2026-04-01_ZKJ_001.igc",
-					"flight_date": "2026-04-01", "rego": "ZKJ",
+					"id": 1, "filename": "641GBE1.igc",
+					"flight_date": "2026-04-01", "rego": "GBE",
 					"flight_number": 1, "size_bytes": %d,
 					"file_hash": "%s",
-					"url": "%s/igc/2026-04-01_ZKJ_001.igc"
+					"url": "%s/igc/641GBE1.igc"
 				}],
 				"next_page_url": null, "total": 1
 			}`, len(content), hash, srvURL)))
-		case "/igc/2026-04-01_ZKJ_001.igc":
+		case "/igc/641GBE1.igc":
 			w.Write(content)
 		default:
 			w.WriteHeader(http.StatusNotFound)
@@ -65,7 +65,7 @@ func TestRunCycle_DownloadsNewFiles(t *testing.T) {
 		t.Fatalf("runCycle error: %v", err)
 	}
 
-	destPath := filepath.Join(dir, "2026-04-01", "2026-04-01_ZKJ_001.igc")
+	destPath := filepath.Join(dir, "641GBE1.igc")
 	got, err := os.ReadFile(destPath)
 	if err != nil {
 		t.Fatalf("file not downloaded: %v", err)
@@ -83,9 +83,9 @@ func TestRunCycle_NoChanges(t *testing.T) {
 		if r.URL.Path == "/api/v1/events/1/igc-files" {
 			w.Write([]byte(fmt.Sprintf(`{
 				"success": true, "data": [{
-					"id": 1, "filename": "a.igc", "flight_date": "2026-04-01",
-					"rego": "ZKA", "flight_number": 1, "size_bytes": %d,
-					"file_hash": "%s", "url": "%s/igc/a.igc"
+					"id": 1, "filename": "641GBE1.igc", "flight_date": "2026-04-01",
+					"rego": "GBE", "flight_number": 1, "size_bytes": %d,
+					"file_hash": "%s", "url": "%s/igc/641GBE1.igc"
 				}], "next_page_url": null, "total": 1
 			}`, len(content), hash, srvURL)))
 		} else {
@@ -96,11 +96,7 @@ func TestRunCycle_NoChanges(t *testing.T) {
 	srvURL = srv.URL
 
 	dir := t.TempDir()
-	subdir := filepath.Join(dir, "2026-04-01")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(subdir, "a.igc"), content, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "641GBE1.igc"), content, 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -127,12 +123,12 @@ func TestRunCycle_UpdatesChangedFile(t *testing.T) {
 		case "/api/v1/events/7/igc-files":
 			w.Write([]byte(fmt.Sprintf(`{
 				"success": true, "data": [{
-					"id": 1, "filename": "a.igc", "flight_date": "2026-04-01",
-					"rego": "ZKA", "flight_number": 1, "size_bytes": %d,
-					"file_hash": "%s", "url": "%s/igc/a.igc"
+					"id": 1, "filename": "641GBE1.igc", "flight_date": "2026-04-01",
+					"rego": "GBE", "flight_number": 1, "size_bytes": %d,
+					"file_hash": "%s", "url": "%s/igc/641GBE1.igc"
 				}], "next_page_url": null, "total": 1
 			}`, len(newContent), newHash, srvURL)))
-		case "/igc/a.igc":
+		case "/igc/641GBE1.igc":
 			w.Write(newContent)
 		default:
 			w.WriteHeader(http.StatusNotFound)
@@ -142,11 +138,7 @@ func TestRunCycle_UpdatesChangedFile(t *testing.T) {
 	srvURL = srv.URL
 
 	dir := t.TempDir()
-	subdir := filepath.Join(dir, "2026-04-01")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(subdir, "a.igc"), oldContent, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "641GBE1.igc"), oldContent, 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -162,7 +154,7 @@ func TestRunCycle_UpdatesChangedFile(t *testing.T) {
 		t.Fatalf("runCycle error: %v", err)
 	}
 
-	got, err := os.ReadFile(filepath.Join(subdir, "a.igc"))
+	got, err := os.ReadFile(filepath.Join(dir, "641GBE1.igc"))
 	if err != nil {
 		t.Fatalf("reading updated file: %v", err)
 	}

@@ -18,7 +18,7 @@ igc-sync
 
 1. A loading screen fetches the event list from gliding.net.nz.
 2. Select an event using the arrow keys and press Enter.
-3. Files are downloaded to `./{event-slug}/{YYYY-MM-DD}/{filename}.igc` and kept in sync, polling every 60 seconds.
+3. Files are downloaded to `./{event-slug}/{filename}.igc` and kept in sync, polling every 60 seconds.
 4. Press `q` or `Ctrl+C` to stop.
 
 No authentication is required — the gliding.net.nz API is public.
@@ -71,11 +71,16 @@ IGC_SYNC_NOW=2026-11-01 go run .
 ```
 {cwd}/
 └── central-plateau-soaring-competition-oct-2026/
-    ├── 2026-11-07/
-    │   ├── 2026-11-07_ZKJ_001.igc
-    │   └── 2026-11-07_ZKL_001.igc
-    └── 2026-11-08/
-        └── 2026-11-08_ZKJ_001.igc
+    ├── 637GBE1.igc
+    ├── 637GBH1.igc
+    ├── 637GDX1.igc
+    ├── 637GFE1.igc
+    ├── 637GHD1.igc
+    ├── 637GKT1.igc
+    ├── 637GKW1.igc
+    ├── 637GLL1.igc
+    ├── 637GML1.igc
+    └── ...
 ```
 
 ## How it works

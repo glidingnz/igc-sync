@@ -14,20 +14,38 @@ import (
 
 func TestLocalPath(t *testing.T) {
 	f := api.IgcFile{
-		Filename:   "2026-04-01_ZKJ_001.igc",
+		Filename:   "641GBE1.igc",
 		FlightDate: "2026-04-01",
 	}
 	got := LocalPath(f)
-	want := filepath.Join("2026-04-01", "2026-04-01_ZKJ_001.igc")
+	want := "641GBE1.igc"
 	if got != want {
 		t.Errorf("LocalPath = %q, want %q", got, want)
 	}
 }
 
+func TestLocalPath_PathTraversal(t *testing.T) {
+	cases := []struct {
+		filename string
+		want     string
+	}{
+		{"../../../etc/passwd", "passwd"},
+		{"subdir/evil.igc", "evil.igc"},
+		{"/absolute/path.igc", "path.igc"},
+	}
+	for _, c := range cases {
+		f := api.IgcFile{Filename: c.filename}
+		got := LocalPath(f)
+		if got != c.want {
+			t.Errorf("LocalPath(%q) = %q, want %q", c.filename, got, c.want)
+		}
+	}
+}
+
 func TestDiff_NewFiles(t *testing.T) {
 	remote := []api.IgcFile{
-		{Filename: "a.igc", FlightDate: "2026-04-01", FileHash: "aaa"},
-		{Filename: "b.igc", FlightDate: "2026-04-01", FileHash: "bbb"},
+		{Filename: "641GBE1.igc", FlightDate: "2026-04-01", FileHash: "aaa"},
+		{Filename: "641GBH1.igc", FlightDate: "2026-04-01", FileHash: "bbb"},
 	}
 	local := LocalState{}
 
@@ -43,10 +61,10 @@ func TestDiff_NewFiles(t *testing.T) {
 
 func TestDiff_UpdatedFile(t *testing.T) {
 	remote := []api.IgcFile{
-		{Filename: "a.igc", FlightDate: "2026-04-01", FileHash: "newhash"},
+		{Filename: "641GBE1.igc", FlightDate: "2026-04-01", FileHash: "newhash"},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "a.igc"): "oldhash",
+		"641GBE1.igc": "oldhash",
 	}
 
 	result := Diff(remote, local)
@@ -57,7 +75,7 @@ func TestDiff_UpdatedFile(t *testing.T) {
 	if len(result.Updated) != 1 {
 		t.Errorf("expected 1 updated file, got %d", len(result.Updated))
 	}
-	if result.Updated[0].Filename != "a.igc" {
+	if result.Updated[0].Filename != "641GBE1.igc" {
 		t.Errorf("unexpected updated filename: %s", result.Updated[0].Filename)
 	}
 }
@@ -65,10 +83,10 @@ func TestDiff_UpdatedFile(t *testing.T) {
 func TestDiff_NoChanges(t *testing.T) {
 	hash := "abc123"
 	remote := []api.IgcFile{
-		{Filename: "a.igc", FlightDate: "2026-04-01", FileHash: hash},
+		{Filename: "641GBE1.igc", FlightDate: "2026-04-01", FileHash: hash},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "a.igc"): hash,
+		"641GBE1.igc": hash,
 	}
 
 	result := Diff(remote, local)
@@ -81,10 +99,10 @@ func TestDiff_NoChanges(t *testing.T) {
 func TestDiff_EmptyHashSkipsUpdate(t *testing.T) {
 	// If API returns empty file_hash, we should not trigger update (hash unknown).
 	remote := []api.IgcFile{
-		{Filename: "a.igc", FlightDate: "2026-04-01", FileHash: ""},
+		{Filename: "641GBE1.igc", FlightDate: "2026-04-01", FileHash: ""},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "a.igc"): "existinghash",
+		"641GBE1.igc": "existinghash",
 	}
 
 	result := Diff(remote, local)
@@ -96,22 +114,22 @@ func TestDiff_EmptyHashSkipsUpdate(t *testing.T) {
 
 func TestDiff_MixedResults(t *testing.T) {
 	remote := []api.IgcFile{
-		{Filename: "new.igc", FlightDate: "2026-04-01", FileHash: "aaa"},
-		{Filename: "same.igc", FlightDate: "2026-04-01", FileHash: "bbb"},
-		{Filename: "changed.igc", FlightDate: "2026-04-01", FileHash: "ccc"},
+		{Filename: "641GBE1.igc", FlightDate: "2026-04-01", FileHash: "aaa"},
+		{Filename: "641GBH1.igc", FlightDate: "2026-04-01", FileHash: "bbb"},
+		{Filename: "641GDX1.igc", FlightDate: "2026-04-01", FileHash: "ccc"},
 	}
 	local := LocalState{
-		filepath.Join("2026-04-01", "same.igc"):    "bbb",
-		filepath.Join("2026-04-01", "changed.igc"): "old",
+		"641GBH1.igc": "bbb",
+		"641GDX1.igc": "old",
 	}
 
 	result := Diff(remote, local)
 
-	if len(result.New) != 1 || result.New[0].Filename != "new.igc" {
-		t.Errorf("expected 1 new file (new.igc), got %v", result.New)
+	if len(result.New) != 1 || result.New[0].Filename != "641GBE1.igc" {
+		t.Errorf("expected 1 new file (641GBE1.igc), got %v", result.New)
 	}
-	if len(result.Updated) != 1 || result.Updated[0].Filename != "changed.igc" {
-		t.Errorf("expected 1 updated file (changed.igc), got %v", result.Updated)
+	if len(result.Updated) != 1 || result.Updated[0].Filename != "641GDX1.igc" {
+		t.Errorf("expected 1 updated file (641GDX1.igc), got %v", result.Updated)
 	}
 }
 
@@ -139,14 +157,8 @@ func TestScanLocal_NonExistentDir(t *testing.T) {
 func TestScanLocal_WithFiles(t *testing.T) {
 	dir := t.TempDir()
 
-	// Create a date subdirectory with a file.
-	subdir := filepath.Join(dir, "2026-04-01")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-
 	content := []byte("IGC file content here")
-	filePath := filepath.Join(subdir, "test.igc")
+	filePath := filepath.Join(dir, "test.igc")
 	if err := os.WriteFile(filePath, content, 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -156,10 +168,9 @@ func TestScanLocal_WithFiles(t *testing.T) {
 		t.Fatalf("ScanLocal error: %v", err)
 	}
 
-	relPath := filepath.Join("2026-04-01", "test.igc")
-	hash, ok := state[relPath]
+	hash, ok := state["test.igc"]
 	if !ok {
-		t.Fatalf("expected %q in state, got %v", relPath, state)
+		t.Fatalf("expected %q in state, got %v", "test.igc", state)
 	}
 
 	// Verify hash matches manual calculation.
@@ -182,10 +193,10 @@ func TestDownload_Success(t *testing.T) {
 
 	dir := t.TempDir()
 	f := api.IgcFile{
-		Filename:   "2026-04-01_ZKJ_001.igc",
+		Filename:   "641GBE1.igc",
 		FlightDate: "2026-04-01",
 		FileHash:   expectedHash,
-		URL:        srv.URL + "/igc/file.igc",
+		URL:        srv.URL + "/igc/641GBE1.igc",
 	}
 
 	err := Download(f, dir, srv.Client())
@@ -193,7 +204,7 @@ func TestDownload_Success(t *testing.T) {
 		t.Fatalf("Download error: %v", err)
 	}
 
-	destPath := filepath.Join(dir, "2026-04-01", "2026-04-01_ZKJ_001.igc")
+	destPath := filepath.Join(dir, "641GBE1.igc")
 	got, err := os.ReadFile(destPath)
 	if err != nil {
 		t.Fatalf("reading downloaded file: %v", err)
@@ -211,10 +222,10 @@ func TestDownload_HashMismatch(t *testing.T) {
 
 	dir := t.TempDir()
 	f := api.IgcFile{
-		Filename:   "2026-04-01_ZKJ_001.igc",
+		Filename:   "641GBE1.igc",
 		FlightDate: "2026-04-01",
 		FileHash:   "0000000000000000000000000000000000000000000000000000000000000000",
-		URL:        srv.URL + "/igc/file.igc",
+		URL:        srv.URL + "/igc/641GBE1.igc",
 	}
 
 	err := Download(f, dir, srv.Client())
@@ -223,7 +234,7 @@ func TestDownload_HashMismatch(t *testing.T) {
 	}
 
 	// Temp file should be cleaned up.
-	tmpPath := filepath.Join(dir, "2026-04-01", "2026-04-01_ZKJ_001.igc.tmp")
+	tmpPath := filepath.Join(dir, "641GBE1.igc.tmp")
 	if _, err := os.Stat(tmpPath); !os.IsNotExist(err) {
 		t.Error("temp file should be removed after hash mismatch")
 	}
@@ -248,7 +259,7 @@ func TestDownload_HTTPError(t *testing.T) {
 	}
 }
 
-func TestDownload_CreatesSubdirectory(t *testing.T) {
+func TestDownload_CreatesOutputDir(t *testing.T) {
 	content := []byte("IGC data")
 	h := sha256.Sum256(content)
 	hash := hex.EncodeToString(h[:])
@@ -258,7 +269,7 @@ func TestDownload_CreatesSubdirectory(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	dir := t.TempDir()
+	dir := filepath.Join(t.TempDir(), "new-subdir")
 	f := api.IgcFile{
 		Filename:   "file.igc",
 		FlightDate: "2026-11-07",
@@ -270,9 +281,9 @@ func TestDownload_CreatesSubdirectory(t *testing.T) {
 		t.Fatalf("Download error: %v", err)
 	}
 
-	// Verify subdirectory was created.
-	subdir := filepath.Join(dir, "2026-11-07")
-	if _, err := os.Stat(subdir); os.IsNotExist(err) {
-		t.Error("expected subdirectory 2026-11-07 to be created")
+	// File should be directly in the output dir, no date subdirectory.
+	destPath := filepath.Join(dir, "file.igc")
+	if _, err := os.Stat(destPath); os.IsNotExist(err) {
+		t.Errorf("expected file at %s", destPath)
 	}
 }
