@@ -33,6 +33,9 @@ git clone https://github.com/glidingnz/igc-sync
 cd igc-sync
 go test ./...
 
+# Activate git hooks (blocks direct pushes to main)
+git config core.hooksPath .githooks
+
 # Run locally
 go run .
 
