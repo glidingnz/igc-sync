@@ -86,7 +86,7 @@ IGC_SYNC_NOW=2026-11-01 go run .
 ## How it works
 
 - Shows the 5 most recent past events and next 10 upcoming/active events; cursor starts on the closest one to now
-- Polls `GET /api/v1/events/{id}/igc-files` once per minute
+- Polls `GET /api/v1/events/{id}/igc-files` once per minute, sending `User-Agent: igc-sync/<version>` so a WAF can allow it
 - Compares the `file_hash` (SHA-256) of each remote file against the local copy
 - Downloads new files and re-downloads files whose hash has changed (e.g. organiser re-uploaded a corrected file)
 - Verifies SHA-256 after each download; discards the file if it doesn't match
