@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Minor and patch bumps are grouped into one PR per ecosystem so merging one
+  # never conflicts the others; majors stay separate so each breaking change
+  # gets its own PR. The cooldown gives a compromised release a day to be
+  # spotted and yanked before it is proposed here.
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 1
+    groups:
+      gomod-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # Bumps both the pinned SHA and its trailing `# vX.Y.Z` comment.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 1
+    groups:
+      actions-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]

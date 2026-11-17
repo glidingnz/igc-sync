@@ -33,6 +33,9 @@ git clone https://github.com/glidingnz/igc-sync
 cd igc-sync
 go test ./...
 
+# Live tests: real anonymous GETs against gliding.net.nz (CI runs these too)
+go test -tags live ./internal/live/
+
 # Activate git hooks (blocks direct pushes to main)
 git config core.hooksPath .githooks
 

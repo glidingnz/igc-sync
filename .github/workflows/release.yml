@@ -4,17 +4,22 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-go@v6.4.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false  # no cache in a workflow that publishes binaries (zizmor cache-poisoning)
 
       - name: Run tests
         run: go test ./...
@@ -42,23 +47,28 @@ jobs:
             asset: igc-sync-windows-amd64.exe
 
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-go@v6.4.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false  # no cache in a workflow that publishes binaries (zizmor cache-poisoning)
 
       - name: Build
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
+          TAG: ${{ github.ref_name }}
         run: |
-          go build -trimpath -ldflags="-s -w -X main.version=${{ github.ref_name }}" \
+          go build -trimpath -ldflags="-s -w -X main.version=${TAG}" \
             -o ${{ matrix.asset }} .
 
       - name: Upload to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.ref_name }} ${{ matrix.asset }} --clobber
+          TAG: ${{ github.ref_name }}
+          ASSET: ${{ matrix.asset }}
+        run: gh release upload "$TAG" "$ASSET" --clobber
