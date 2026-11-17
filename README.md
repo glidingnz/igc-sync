@@ -69,6 +69,29 @@ Set `IGC_SYNC_NOW=YYYY-MM-DD` to override the current date used when selecting w
 IGC_SYNC_NOW=2026-11-01 go run .
 ```
 
+## Releasing
+
+Versions follow [SemVer](https://semver.org/). For a CLI, the public API is everything an organiser's setup relies on: how it is run, where files land and what they are called, and the supported platforms.
+
+| Bump | When |
+|---|---|
+| Major | An existing setup breaks: a different output folder or filenames, a dropped platform, a new required step |
+| Minor | New capability; existing setups unaffected |
+| Patch | Bug fixes, and Go dependency bumps worth shipping (e.g. a security fix) |
+| None | Tests, CI, docs and GitHub Actions bumps; the binary doesn't change |
+
+Weekly Dependabot bumps accumulate on `main` until there is a reason to ship. Release well before a competition, not during one: organisers download the binary once and leave it running.
+
+To release, with CI green on `main`:
+
+```sh
+gh release create vX.Y.Z --target main --generate-notes
+```
+
+or, on GitHub: **Releases → Draft a new release**, type the new tag, target `main`, **Generate release notes**, **Publish**.
+
+Publishing triggers the [Release workflow](.github/workflows/release.yml), which tests, builds all four platform binaries with the tag embedded, and attaches them to the release within a few minutes. If it fails, fix `main` and re-run the workflow; the release itself can stay.
+
 ## Output structure
 
 ```
