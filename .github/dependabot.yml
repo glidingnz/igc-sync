@@ -6,6 +6,9 @@ updates:
   # spotted and yanked before it is proposed here.
   - package-ecosystem: "gomod"
     directory: "/"
+    # Transitive modules (golang.org/x/sys etc.) too, not just the three direct ones.
+    allow:
+      - dependency-type: "all"
     schedule:
       interval: "weekly"
     cooldown:
