@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/glidingnz/igc-sync/internal/api"
 	"github.com/glidingnz/igc-sync/internal/ui"
@@ -13,10 +11,11 @@ import (
 
 const baseURL = api.DefaultBaseURL
 
+// version is set at release time by -ldflags "-X main.version=<tag>".
+var version = "dev"
+
 func main() {
-	client := &http.Client{
-		Timeout: 30 * time.Second,
-	}
+	client := api.NewClient(version)
 
 	// 1. Fetch all events (shows a loading spinner TUI).
 	events, err := ui.FetchEventsWithUI(baseURL, client)
